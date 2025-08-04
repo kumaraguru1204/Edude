@@ -2,12 +2,10 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
 from .models import Attendance
 from .serializers import AttendanceSerializer
-from accounts.models import User
 from timetable.models import TimetableCell
-from classes.models import ClassSection
+from rest_framework.response import Response
 
 class AttendanceStudentView(generics.ListAPIView):
     serializer_class = AttendanceSerializer
@@ -19,18 +17,40 @@ class AttendanceStudentView(generics.ListAPIView):
         return Attendance.objects.none()
 
 
-class AttendanceFacultyView(generics.ListCreateAPIView):
+class AttendanceMarkView(generics.CreateAPIView):
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        if self.request.user.role in ['faculty', 'admin']:
-            # Get all sections taught by this faculty
-            section_ids = self.request.user.sections_taught.values_list('id', flat=True)
-            return Attendance.objects.filter(cell__section_id__in=section_ids)
-        return Attendance.objects.none()
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {'error': 'Expected a list of attendance records'},
+                status=400
+            )
 
-    def perform_create(self, serializer):
-        if self.request.user.role not in ['faculty', 'admin']:
-            raise PermissionDenied("Only faculty can mark attendance.")
-        serializer.save()
+        created = []
+        errors = []
+
+        for item in data:
+            try:
+                student_id = item.get('student')
+                cell_id = item.get('cell')
+                status_val = item.get('status')
+                date = item.get('date')
+
+                if not all([student_id, cell_id, status_val, date]):
+                    errors.append({'item': item, 'error': 'Missing fields'})
+                    continue
+
+                attendance = Attendance.objects.create(
+                    student_id=student_id,
+                    cell_id=cell_id,
+                    status=status_val,
+                    date=date
+                )
+                created.append(AttendanceSerializer(attendance).data)
+            except Exception as e:
+                errors.append({'item': item, 'error': str(e)})
+
+        return Response({'created': created, 'errors': errors}, status=201)

@@ -48,4 +48,5 @@ urlpatterns = [
     path('api/feedback-notes/', include('feedback_notes.urls')),
     path('api/attendance/', include('attendance.urls')),
     path('api/attendance/students/', get_students_for_faculty, name='get-students'),
+    path('api/classes/', include('classes.urls')),
 ]

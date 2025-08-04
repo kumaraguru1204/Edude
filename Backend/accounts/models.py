@@ -16,6 +16,8 @@ class User(AbstractUser):
         return f"{self.username} ({self.role})"
 
 
+# No import from classes.models
+# Use string reference
 class StudentProfile(models.Model):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name='student_profile')
     section = models.ForeignKey('classes.ClassSection', on_delete=models.CASCADE)
