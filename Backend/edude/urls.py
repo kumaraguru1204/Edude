@@ -33,6 +33,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.models import User
 from accounts.serializers import CustomTokenObtainPairSerializer
+from attendance.api import get_students_for_faculty
 
 # Custom view that uses our inline serializer
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -44,4 +45,7 @@ urlpatterns = [
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/timetable/', include('timetable.urls')),
+    path('api/feedback-notes/', include('feedback_notes.urls')),
+    path('api/attendance/', include('attendance.urls')),
+    path('api/attendance/students/', get_students_for_faculty, name='get-students'),
 ]

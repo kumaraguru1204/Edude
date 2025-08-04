@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'accounts',
     'classes',
     'timetable',
+    'feedback_notes',
+    'attendance',
     'rest_framework',
 ]
 
